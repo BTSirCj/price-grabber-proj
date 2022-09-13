@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 import requests
-import json
 import smtplib
 import time
 import sys
@@ -35,20 +34,27 @@ def check_price_bestbuy():
     doc = BeautifulSoup(result.text, "html.parser")
     #print(doc.prettify)
 
+    #finish working on catching monthly payment
     temp = doc.findAll("div", "priceView-hero-price priceView-customer-price")
+    monChecker = doc.find_all("span", "priceView-subscription-units")
     #print("\$.*" in temp)
     price = str(temp)
+    monthly = str(monChecker)
+    monthly = monthly.find('/')
     price = price.split('$')[1]
+    #monthly = monChecker.split('/')[1]
     finPrice = price.split('<')[0]
     finPrice = finPrice.replace(',', '')
     finPrice = float(finPrice)
 
     print(finPrice)
+    print(monthly)
     #print(price)
 
     #if(convPrice < 500.00):
         #send_mail()
 
+#try implement a discount checker to see % off in current discount
 def check_price_amazon():
     url = input("Enter URL: ")
     finURL = url
@@ -67,27 +73,22 @@ def check_price_amazon():
 }
 
     result = requests.get(url, headers=headers)
-    #result_formatted = json.loads(result.content.decode('utf-8-sig').encode('utf-8'))
     doc = BeautifulSoup(result.text, "html.parser")
     docFinal = BeautifulSoup(doc.prettify(), "html.parser")
 
-    #print(doc.prettify)
-
-
-    #fix so that small $ and big $ are recognized. Maybe an if elif? check which it is.
+    #checkers which type of $ is used. Small $ or Big $
     temp = docFinal.findAll("span", "a-price a-text-price a-size-medium apexPriceToPay")
-    #temp = docFinal.findAll("span", "a-price aok-align-center reinventPricePriceToPayMargin priceToPay")
+    checker = bool(temp)
+    if(checker == False): #checks if small $ is used, if it isnt, will switch to finding big $
+        temp = docFinal.findAll("span", "a-price aok-align-center reinventPricePriceToPayMargin priceToPay")
 
-    print(temp)
-    #print("\$.*" in temp)
-    #price = str(temp)
-    #price = price.split('$')[1]
-    #finPrice = price.split('<')[0]
-    #finPrice = finPrice.replace(',', '')
-    #finPrice = float(finPrice)
+    price = str(temp)
+    price = price.split('$')[1]
+    finPrice = price.split('<')[0]
+    finPrice = finPrice.replace(',', '')
+    finPrice = float(finPrice)
 
-    #temp = docFinal.findAll("span", "a-price a-text-price a-size-medium apexPriceToPay")
-    #print(finPrice)
+    print(finPrice)
 
 
 def send_mail():
@@ -112,7 +113,7 @@ def send_mail():
     print("EMAIL SENT!")
     server.quit()
 
-check_price_amazon()
+check_price_bestbuy()
 global counter
 counter = 1
 while(counter >= 0):
