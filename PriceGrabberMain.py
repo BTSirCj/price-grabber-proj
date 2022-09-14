@@ -3,18 +3,29 @@ import requests
 import smtplib
 import time
 import sys
-import re
 from datetime import datetime
 
 #add diff functions for diff websites (newegg, amazon, bestbuy)
 #add a function to account for tax, ($350 ($370 post tax))
 #user agent stuff for fake req
 
-global finURL
+#grab the name of the item
+#make function to ask which retailer to use
+#add error catcher, to grab if link works or not
+
+
+global bbURL
+bbURL = ""
+global neURL
+neURL = ""
+global tax
+tax = .10
 
 def check_price_bestbuy():
-    url = input("Enter URL: ")
-    finURL = url
+    webType = "best buy"
+    url = input("Enter URL (BEST BUY): ")
+    bbURL = url
+    priceWant = input("Enter the price you want it to be: ")
 
     headers = {
     'authority' : 'www.bestbuy.com',
@@ -25,11 +36,11 @@ def check_price_bestbuy():
     'sec-fetch-site' : 'same-origin',
     'sec-fetch-mode' : 'cors',
     'sec-fetch-dest' : 'empty',
-    'referer' : url,
+    'referer' : bbURL,
     'accept-language' : 'en-US,en;q=0.9'
 }
 
-    result = requests.get(url, headers=headers)
+    result = requests.get(bbURL, headers=headers)
     #result_formatted = json.loads(result.content.decode('utf-8-sig').encode('utf-8'))
     doc = BeautifulSoup(result.text, "html.parser")
     #print(doc.prettify)
@@ -37,7 +48,6 @@ def check_price_bestbuy():
     #finish working on catching monthly payment
     temp = doc.findAll("div", "priceView-hero-price priceView-customer-price")
     monChecker = doc.find_all("span", "priceView-subscription-units")
-    #print("\$.*" in temp)
     price = str(temp)
     monthly = str(monChecker)
     monthly = monthly.find('/')
@@ -47,17 +57,22 @@ def check_price_bestbuy():
     finPrice = finPrice.replace(',', '')
     finPrice = float(finPrice)
 
-    print(finPrice)
+    print(f"${finPrice}")
     print(monthly)
-    #print(price)
+    print(priceWant)
 
-    #if(convPrice < 500.00):
-        #send_mail()
+    #if(finPrice < priceWant):
+    #    send_mail(webType)
 
 #try implement a discount checker to see % off in current discount
 def check_price_amazon():
-    url = input("Enter URL: ")
-    finURL = url
+    webType = "amazon"
+    global amURL
+    url = input("Enter URL (AMAZON): ")
+    amURL = url
+    priceWant = input("Enter the price you want it to be: ")
+    priceWant = int(priceWant)
+
 
     headers = {
     'authority' : 'www.bestbuy.com',
@@ -68,11 +83,11 @@ def check_price_amazon():
     'sec-fetch-site' : 'same-origin',
     'sec-fetch-mode' : 'cors',
     'sec-fetch-dest' : 'empty',
-    'referer' : url,
+    'referer' : amURL,
     'accept-language' : 'en-US,en;q=0.9'
 }
 
-    result = requests.get(url, headers=headers)
+    result = requests.get(amURL, headers=headers)
     doc = BeautifulSoup(result.text, "html.parser")
     docFinal = BeautifulSoup(doc.prettify(), "html.parser")
 
@@ -81,6 +96,9 @@ def check_price_amazon():
     checker = bool(temp)
     if(checker == False): #checks if small $ is used, if it isnt, will switch to finding big $
         temp = docFinal.findAll("span", "a-price aok-align-center reinventPricePriceToPayMargin priceToPay")
+    
+    prodID = docFinal.findAll("span", "a-size-large product-title-word-break")
+    
 
     price = str(temp)
     price = price.split('$')[1]
@@ -88,11 +106,26 @@ def check_price_amazon():
     finPrice = finPrice.replace(',', '')
     finPrice = float(finPrice)
 
-    print(finPrice)
+    #apply tax
+    finTax = finPrice * tax
+    finTax += finPrice
+    print(f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}")
+    print(priceWant)
+    print(prodID)
+
+    #send mail
+    #if(finPrice <= priceWant):
+    #    send_mail(webType)
 
 
-def send_mail():
-    url = finURL
+def send_mail(name):
+    if(name == "best buy"):
+        url = bbURL
+    elif(name == "amazon"):
+        url = amURL
+    elif(name == "newegg"):
+        url = neURL        
+
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.ehlo()
     server.starttls() #encrypts connection
@@ -113,14 +146,15 @@ def send_mail():
     print("EMAIL SENT!")
     server.quit()
 
-check_price_bestbuy()
+check_price_amazon()
+#check_price_bestbuy()
 global counter
 counter = 1
 while(counter >= 0):
     while(True):
-        #check_price()
+        #check_price_amazon()
         #print(counter)
-        time.sleep(5)
+        time.sleep(30)
         counter -=1
         if(counter == 0):
             sys.exit(0)
