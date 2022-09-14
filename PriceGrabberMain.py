@@ -13,6 +13,7 @@ from datetime import datetime
 #make function to ask which retailer to use
 #add error catcher, to grab if link works or not
 
+#add newegg again...
 
 global bbURL
 bbURL = ""
