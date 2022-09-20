@@ -1,3 +1,4 @@
+from distutils.util import check_environ
 from itertools import product
 from bs4 import BeautifulSoup
 import requests
@@ -7,23 +8,53 @@ import sys
 import re
 from datetime import datetime
 
-#add diff functions for diff websites (newegg, amazon, bestbuy)
-#add a function to account for tax, ($350 ($370 post tax))
-#user agent stuff for fake req
+#add diff functions for diff websites (newegg, amazon, bestbuy) X
+#add a function to account for tax, ($350 ($370 post tax)) X
+#user agent stuff for fake req X
 
-#grab the name of the item
-#make function to ask which retailer to use
-#add error catcher, to grab if link works or not
+#grab the name of the item X
+#make function to ask which retailer to use X
+#add error catcher, to grab if link works or not -> finish the Url valid checker
 
 #add newegg again...
 #newegg done
 
+def retail_check():
+    answer = input("What retailer will you be using?\nAmazon, Best Buy, or Newegg?: ")
+    answer = answer.lower()
+    if(answer == "amazon"):
+        check_price_amazon()
+    elif(answer == "best buy"):
+        check_price_bestbuy
+    elif(answer == "newegg"):
+        check_price_newegg
+    else:
+        print("You need to enter either Amazon, Best Buy, or Newegg")
+
+def check_url(url):
+    tempURL = url
+    checker = False
+
+    while(checker == False):
+        newURL = input("Enter a valid link: ")
+
+
+
 global tax
-tax = .10
+tax = .1025
 
 def check_price_newegg():
     global neURL
     neURL = input("Enter URL (NEWEGG): ")
+    page = requests.get(neURL) #request to get url
+    response_code = str(page.status_code)
+    data = page.text
+    soup = BeautifulSoup(data)
+    for link in soup.find_all('a'):
+        print(f"URL: {link.get('href')} " + f"| Status Code: {response_code}")
+
+
+
     #priceWant = input("Enter price you want it to be: ")
     #priceWant = int(priceWant)
 
@@ -44,10 +75,14 @@ def check_price_newegg():
     cents = float(pre)
     finPrice = price + cents
 
-    print("NEWEGG")
-    print(productName)
-    print(finPrice)
-    print("NEWEGG DONE")
+    #tax
+    finTax = finPrice * tax
+    finTax += finPrice
+
+    #print("NEWEGG")
+    #print(productName)
+    #print(f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}")
+    #print("NEWEGG DONE")
 
 
 
@@ -90,11 +125,15 @@ def check_price_bestbuy():
     finPrice = finPrice.replace(',', '')
     finPrice = float(finPrice)
 
+    #tax
+    finTax = finPrice * tax
+    finTax += finPrice
+
     print("BEST BUY: ")
     print(productName)
-    print(f"${finPrice}")
-    print(monthly)
-    print(priceWant)
+    print(f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}")
+    #print(monthly)
+    #print(priceWant)
 
     print("BEST BUY DONE")
 
@@ -107,8 +146,8 @@ def check_price_amazon():
     global amURL
     url = input("Enter URL (AMAZON): ")
     amURL = url
-    priceWant = input("Enter the price you want it to be: ")
-    priceWant = int(priceWant)
+    #priceWant = input("Enter the price you want it to be: ")
+    #priceWant = int(priceWant)
 
 
     headers = {
@@ -128,15 +167,13 @@ def check_price_amazon():
     doc = BeautifulSoup(result.text, "html.parser")
     docFinal = BeautifulSoup(doc.prettify(), "html.parser")
 
-    productName = docFinal.find("h1", "title")
-
     #checkers which type of $ is used. Small $ or Big $
     temp = docFinal.findAll("span", "a-price a-text-price a-size-medium apexPriceToPay")
     checker = bool(temp)
     if(checker == False): #checks if small $ is used, if it isnt, will switch to finding big $
         temp = docFinal.findAll("span", "a-price aok-align-center reinventPricePriceToPayMargin priceToPay")
     
-    prodID = docFinal.find("span", "a-size-large product-title-word-break").string
+    prodID = docFinal.find("span", "a-size-large product-title-word-break").string.strip()
     
 
     price = str(temp)
@@ -149,10 +186,9 @@ def check_price_amazon():
     finTax = finPrice * tax
     finTax += finPrice
     print("AMAZON")
-    #print(productName)
-    print(f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}")
-    print(priceWant)
     print(prodID)
+    print(f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}")
+    #print(priceWant)
     print("AMAZON DONE")
 
     #send mail
@@ -188,9 +224,7 @@ def send_mail(name):
     print("EMAIL SENT!")
     server.quit()
 
-#check_price_newegg()
-#check_price_bestbuy()
-check_price_amazon()
+check_price_newegg()
 global counter
 counter = 1
 while(counter >= 0):
