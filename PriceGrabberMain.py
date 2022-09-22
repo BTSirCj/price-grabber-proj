@@ -14,10 +14,15 @@ from datetime import datetime
 
 #grab the name of the item X
 #make function to ask which retailer to use X
-#add error catcher, to grab if link works or not -> finish the Url valid checker
+#add error catcher, to grab if link works or not -> finish the Url valid checker X
 
 #add newegg again...
 #newegg done
+
+def returnNamePrice(name, price, taxPrice):
+    itemName = name
+    itemPrice = price
+    itemTaxed = taxPrice
 
 def retail_check():
     answer = input("What retailer will you be using?\nAmazon, Best Buy, or Newegg?: ")
@@ -25,34 +30,42 @@ def retail_check():
     if(answer == "amazon"):
         check_price_amazon()
     elif(answer == "best buy"):
-        check_price_bestbuy
+        check_price_bestbuy()
     elif(answer == "newegg"):
-        check_price_newegg
+        check_price_newegg()
     else:
         print("You need to enter either Amazon, Best Buy, or Newegg")
 
 def check_url(url):
+    headers = {
+            'user-agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36',
+    }
     tempURL = url
     checker = False
 
     while(checker == False):
-        newURL = input("Enter a valid link: ")
-
-
+            try:
+                r = requests.get(tempURL, headers=headers).status_code
+                print("URL is valid, checking if broken...")
+                if(r == 404 or r == 400):
+                    global tryURL
+                    tryURL = input("URL is broken. Check URL and try again: ")
+                    check_url(tryURL)
+                    return tryURL
+                else:
+                    checker = True
+                    return tryURL
+            except requests.ConnectionError as exception:
+                print("URL does not exist on Internet")
+        
 
 global tax
 tax = .1025
 
 def check_price_newegg():
     global neURL
-    neURL = input("Enter URL (NEWEGG): ")
-    page = requests.get(neURL) #request to get url
-    response_code = str(page.status_code)
-    data = page.text
-    soup = BeautifulSoup(data)
-    for link in soup.find_all('a'):
-        print(f"URL: {link.get('href')} " + f"| Status Code: {response_code}")
-
+    url = input("Enter URL (NEWEGG): ")
+    neURL = check_url(url)
 
 
     #priceWant = input("Enter price you want it to be: ")
@@ -79,10 +92,13 @@ def check_price_newegg():
     finTax = finPrice * tax
     finTax += finPrice
 
-    #print("NEWEGG")
-    #print(productName)
-    #print(f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}")
-    #print("NEWEGG DONE")
+    returnNamePrice(productName, finPrice, finTax)
+
+
+    print("NEWEGG")
+    print(productName)
+    print(f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}")
+    print("NEWEGG DONE")
 
 
 
@@ -90,7 +106,7 @@ def check_price_bestbuy():
     webType = "best buy"
     url = input("Enter URL (BEST BUY): ")
     global bbURL
-    bbURL = url
+    bbURL = check_url(url)
     priceWant = input("Enter the price you want it to be: ")
 
     headers = {
@@ -129,6 +145,9 @@ def check_price_bestbuy():
     finTax = finPrice * tax
     finTax += finPrice
 
+    returnNamePrice(productName, finPrice, finTax)
+
+
     print("BEST BUY: ")
     print(productName)
     print(f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}")
@@ -145,13 +164,13 @@ def check_price_amazon():
     webType = "amazon"
     global amURL
     url = input("Enter URL (AMAZON): ")
-    amURL = url
+    amURL = check_url(url)
     #priceWant = input("Enter the price you want it to be: ")
     #priceWant = int(priceWant)
 
 
     headers = {
-    'authority' : 'www.bestbuy.com',
+    'authority' : 'www.amazon.com',
     'pragma' : 'no.cache',
     'cache-control' : 'no-cache',
     'user-agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36',
@@ -185,6 +204,10 @@ def check_price_amazon():
     #apply tax
     finTax = finPrice * tax
     finTax += finPrice
+
+    returnNamePrice(prodID, finPrice, finTax)
+
+
     print("AMAZON")
     print(prodID)
     print(f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}")
@@ -224,14 +247,12 @@ def send_mail(name):
     print("EMAIL SENT!")
     server.quit()
 
-check_price_newegg()
-global counter
 counter = 1
 while(counter >= 0):
     while(True):
-        #check_price_amazon()
-        #print(counter)
-        time.sleep(1)
+        retail_check()
+        print(counter)
+        time.sleep(10)
         counter -=1
         if(counter == 0):
             sys.exit(0)
