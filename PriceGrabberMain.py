@@ -54,6 +54,7 @@ def check_url(url):
                     return tryURL
                 else:
                     checker = True
+                    tryURL = url
                     return tryURL
             except requests.ConnectionError as exception:
                 print("URL does not exist on Internet")
@@ -63,13 +64,14 @@ global tax
 tax = .1025
 
 def check_price_newegg():
+    webType = "newegg"
     global neURL
     url = input("Enter URL (NEWEGG): ")
     neURL = check_url(url)
 
 
-    #priceWant = input("Enter price you want it to be: ")
-    #priceWant = int(priceWant)
+    priceWant = input("Enter price you want it to be: ")
+    priceWant = int(priceWant)
 
     headers = {
             'user-agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36',
@@ -97,8 +99,12 @@ def check_price_newegg():
 
     print("NEWEGG")
     print(productName)
-    print(f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}")
+    message = f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}"
     print("NEWEGG DONE")
+
+    #send mail
+    if(finPrice <= priceWant):
+        send_mail(webType, productName, message)
 
 
 
@@ -150,23 +156,23 @@ def check_price_bestbuy():
 
     print("BEST BUY: ")
     print(productName)
-    print(f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}")
+    message = f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}"
+    #print(f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}")
     #print(monthly)
     #print(priceWant)
 
     print("BEST BUY DONE")
 
-    #if(finPrice < priceWant):
-    #    send_mail(webType)
-
+    if(finPrice < priceWant):
+        send_mail(webType, productName, message)
 #try implement a discount checker to see % off in current discount
 def check_price_amazon():
     webType = "amazon"
     global amURL
     url = input("Enter URL (AMAZON): ")
     amURL = check_url(url)
-    #priceWant = input("Enter the price you want it to be: ")
-    #priceWant = int(priceWant)
+    priceWant = input("Enter the price you want it to be: ")
+    priceWant = int(priceWant)
 
 
     headers = {
@@ -210,16 +216,15 @@ def check_price_amazon():
 
     print("AMAZON")
     print(prodID)
-    print(f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}")
+    message = f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}"
     #print(priceWant)
     print("AMAZON DONE")
 
     #send mail
-    #if(finPrice <= priceWant):
-    #    send_mail(webType)
+    if(finPrice <= priceWant):
+        send_mail(webType, prodID, message)
 
-
-def send_mail(name):
+def send_mail(name, prodName, message):
     if(name == "best buy"):
         url = bbURL
     elif(name == "amazon"):
@@ -233,8 +238,8 @@ def send_mail(name):
     server.ehlo()
     server.login('sirrrcj@gmail.com', 'lrzoipmzsakmmsjc') #logs into email
 
-    subject = "Price checker"
-    body = f"The link: {url}"
+    subject = f"Price for: {prodName}"
+    body = f"The link: {url}\n{message}"
 
     msg = f"Subject: {subject}\n\n{body}"
 
@@ -247,6 +252,8 @@ def send_mail(name):
     print("EMAIL SENT!")
     server.quit()
 
+
+retail_check()
 counter = 1
 while(counter >= 0):
     while(True):
