@@ -19,10 +19,6 @@ from datetime import datetime
 #add newegg again...
 #newegg done
 
-def returnNamePrice(name, price, taxPrice):
-    itemName = name
-    itemPrice = price
-    itemTaxed = taxPrice
 
 def retail_check():
     answer = input("What retailer will you be using?\nAmazon, Best Buy, or Newegg?: ")
@@ -94,9 +90,6 @@ def check_price_newegg():
     finTax = finPrice * tax
     finTax += finPrice
 
-    returnNamePrice(productName, finPrice, finTax)
-
-
     print("NEWEGG")
     print(productName)
     message = f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}"
@@ -150,9 +143,6 @@ def check_price_bestbuy():
     #tax
     finTax = finPrice * tax
     finTax += finPrice
-
-    returnNamePrice(productName, finPrice, finTax)
-
 
     print("BEST BUY: ")
     print(productName)
@@ -211,9 +201,6 @@ def check_price_amazon():
     finTax = finPrice * tax
     finTax += finPrice
 
-    returnNamePrice(prodID, finPrice, finTax)
-
-
     print("AMAZON")
     print(prodID)
     message = f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}"
@@ -233,10 +220,8 @@ def send_mail(name, prodName, message):
         url = neURL        
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.ehlo()
     server.starttls() #encrypts connection
-    server.ehlo()
-    server.login('sirrrcj@gmail.com', 'lrzoipmzsakmmsjc') #logs into email
+    server.login('sirrrcj@gmail.com', 'btnsfegekmidrumz') #logs into email
 
     subject = f"Price for: {prodName}"
     body = f"The link: {url}\n{message}"
@@ -253,11 +238,12 @@ def send_mail(name, prodName, message):
     server.quit()
 
 
-retail_check()
+#retail_check()
 counter = 1
 while(counter >= 0):
+    retail_check()
     while(True):
-        retail_check()
+        #retail_check()
         print(counter)
         time.sleep(10)
         counter -=1
