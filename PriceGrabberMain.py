@@ -54,6 +54,9 @@ def check_url(url):
                     return tryURL
             except requests.ConnectionError as exception:
                 print("URL does not exist on Internet")
+                tryURL = input("URL is broken, Enter new URL: ")
+                check_url(tryURL)
+                return tryURL
         
 
 global tax
@@ -98,6 +101,9 @@ def check_price_newegg():
     #send mail
     if(finPrice <= priceWant):
         send_mail(webType, productName, message)
+    else:
+        print("Price is too high right now.")
+
 
 
 
@@ -106,7 +112,7 @@ def check_price_bestbuy():
     url = input("Enter URL (BEST BUY): ")
     global bbURL
     bbURL = check_url(url)
-    priceWant = input("Enter the price you want it to be: ")
+    priceWant = int(input("Enter the price you want it to be: "))
 
     headers = {
     'authority' : 'www.bestbuy.com',
@@ -153,8 +159,11 @@ def check_price_bestbuy():
 
     print("BEST BUY DONE")
 
-    if(finPrice < priceWant):
+    if(finPrice <= priceWant):
         send_mail(webType, productName, message)
+    else:
+        print("Price is too high right now.")
+
 #try implement a discount checker to see % off in current discount
 def check_price_amazon():
     webType = "amazon"
@@ -204,12 +213,13 @@ def check_price_amazon():
     print("AMAZON")
     print(prodID)
     message = f"Pre Tax Price: ${finPrice}, \nPost Cali 10% Tax Price: ${round(finTax, 2)}"
-    #print(priceWant)
     print("AMAZON DONE")
 
     #send mail
     if(finPrice <= priceWant):
         send_mail(webType, prodID, message)
+    else:
+        print("Price is too high right now.")
 
 def send_mail(name, prodName, message):
     if(name == "best buy"):
